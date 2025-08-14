@@ -1,8 +1,14 @@
 ﻿using System;
-
-public class Class1
+namespace CasaMarket.Domain.Entities
 {
-	public Class1()
-	{
-	}
+
+    public class ImagesProduct()
+    {
+        public readonly int ImageProductID;
+
+        public int ImagesID { get; set; }
+        public int ProductID { get; set; }
+        public string ImageUrl { get; set; }
+
+    }
 }

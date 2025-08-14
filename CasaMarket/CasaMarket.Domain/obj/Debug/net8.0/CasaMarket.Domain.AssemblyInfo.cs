@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CasaMarket.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d68c92e323c30c003412126c6e23581188bee184")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+07e8c4a1e0dcf7a617cab3c60ce22019d4836b18")]
 [assembly: System.Reflection.AssemblyProductAttribute("CasaMarket.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CasaMarket.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
