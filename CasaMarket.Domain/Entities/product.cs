@@ -1,21 +1,18 @@
-﻿using System;
-
-namespace CasaMarket.Domain.Entities { 
-
-    public class product()
-	{
-        public readonly object Images;
-
+﻿namespace CasaMarket.Domain.Entities
+{
+    public class Product
+    {
         public int ProductID { get; set; }
-    public string userID { get; set; }
-    public string Name { get; set; }
-    public string description { get; set; }
-    public int price { get; set; }
-    public string category { get; set; }
-    public int Stock { get; set; }
-    public int PublicationDate { get; set; }
-    public string state { get; set; }
-    
-    
-}
+        public int UserID { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public string Category { get; set; } = string.Empty;
+        public int Stock { get; set; }
+        public DateTime PublicationDate { get; set; }
+        public string State { get; set; } = "Active";
+
+        public ICollection<ImagesProduct> ImagesProducts { get; set; } = new List<ImagesProduct>();
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
+    }
 }

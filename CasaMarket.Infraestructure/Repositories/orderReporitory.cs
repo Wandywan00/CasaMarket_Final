@@ -1,51 +1,78 @@
-﻿using CasaMarket.Domain.Entities;
-using CasaMarket.Infrastructure.Data;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using CasaMarket.Infrastructure.Data;
+using CasaMarket.Domain.Entities;
 
-public class OrderRepository
+namespace CasaMarket.Infrastructure.Repositories
 {
-    private readonly CasaMarketApplicationContext context;
-
-    public OrderRepository(CasaMarketApplicationContext context)
+    public class OrderRepository
     {
-        this.context = context;
-    }
+        private readonly CasaMarketApplicationContext _context;
 
-    public async Task<List<Order>> GetAllOrdersAsync()
-    {
-        return await context.orders
-            .Include(o => o.Buyer)
-            .Include(o => o.DetailOrders)
-            .ToListAsync();
-    }
-
-    public async Task<Order> GetOrderByIdAsync(int id)
-    {
-        return await context.orders
-            .Include(o => o.Buyer)
-            .Include(o => o.DetailOrders)
-            .FirstOrDefaultAsync(o => o.OrderID == id);
-    }
-
-    public async Task AddOrderAsync(Order order)
-    {
-        context.orders.Add(order);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task UpdateOrderAsync(Order order)
-    {
-        context.orders.Update(order);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task DeleteOrderAsync(int id)
-    {
-        var order = await GetOrderByIdAsync(id);
-        if (order != null)
+        public OrderRepository(CasaMarketApplicationContext context)
         {
-            context.orders.Remove(order);
-            await context.SaveChangesAsync();
+            _context = context;
+        }
+
+        public async Task<List<Order>> GetAllAsync()
+        {
+            return await _context.Orders
+                .Include(o => o.Buyer)
+                .Include(o => o.DetailOrders)
+                    .ThenInclude(d => d.Product) 
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+        }
+
+        public async Task<Order?> GetByIdAsync(int id)
+        {
+            return await _context.Orders
+                .Include(o => o.Buyer)
+                .Include(o => o.DetailOrders)
+                    .ThenInclude(d => d.Product) 
+                .FirstOrDefaultAsync(o => o.OrderID == id);
+        }
+
+        public async Task<List<Order>> GetByBuyerAsync(int buyerId)
+        {
+            return await _context.Orders
+                .Where(o => o.BuyerID == buyerId)
+                .Include(o => o.DetailOrders)
+                    .ThenInclude(d => d.Product) 
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<Order>> GetByStateAsync(string state)
+        {
+            return await _context.Orders
+                .Where(o => o.State == state)
+                .Include(o => o.Buyer)
+                .Include(o => o.DetailOrders)
+                    .ThenInclude(d => d.Product) 
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+        }
+
+        public async Task AddAsync(Order entity)
+        {
+            await _context.Orders.AddAsync(entity);
+        }
+
+        public void Update(Order entity)
+        {
+            _context.Orders.Update(entity);
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var order = await _context.Orders.FindAsync(id);
+            if (order is null) return false;
+
+            _context.Orders.Remove(order);
+            return true;
         }
     }
 }

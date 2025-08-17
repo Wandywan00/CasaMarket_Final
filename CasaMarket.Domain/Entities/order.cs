@@ -2,15 +2,15 @@
 {
     public class Order
     {
-        public readonly object DetailOrders;
-
         public int OrderID { get; set; }
 
-        public int BuyerID { get; set; }   // FK
-        public User Buyer { get; set; }    // Propiedad de navegación
+        public int BuyerID { get; set; }
+        public User? Buyer { get; set; }         
 
         public int SellerID { get; set; }
-        public string State { get; set; }
+        public string State { get; set; } = "Pending";
         public DateTime OrderDate { get; set; }
+
+        public ICollection<DetailOrder> DetailOrders { get; set; } = new List<DetailOrder>();
     }
 }

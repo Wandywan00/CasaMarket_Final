@@ -1,49 +1,72 @@
-﻿using CasaMarket.Domain.Entities;
-using CasaMarket.Infrastructure.Data;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using CasaMarket.Domain.Entities;
+using CasaMarket.Infrastructure.Data;
 
-public class ImagesProductRepository
+namespace CasaMarket.Infrastructure.Repositories
 {
-    private readonly CasaMarketApplicationContext context;
-
-    public ImagesProductRepository(CasaMarketApplicationContext context)
+    public class ImagesProductRepository
     {
-        this.context = context;
-    }
+        private readonly CasaMarketApplicationContext _context;
 
-    public async Task<List<ImagesProduct>> GetAllImagesAsync()
-    {
-        return await context.imagesProducts
-            .Include(i => i.ImageProductID)
-            .ToListAsync();
-    }
-
-    public async Task<ImagesProduct> GetImageByIdAsync(int id)
-    {
-        return await context.imagesProducts
-            .Include(i => i.ProductID)
-            .FirstOrDefaultAsync(i => i.ImageProductID == id);
-    }
-
-    public async Task AddImageAsync(ImagesProduct image)
-    {
-        context.imagesProducts.Add(image);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task UpdateImageAsync(ImagesProduct image)
-    {
-        context.imagesProducts.Update(image);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task DeleteImageAsync(int id)
-    {
-        var image = await GetImageByIdAsync(id);
-        if (image != null)
+        public ImagesProductRepository(CasaMarketApplicationContext context)
         {
-            context.imagesProducts.Remove(image);
-            await context.SaveChangesAsync();
+            _context = context;
+        }
+
+        public async Task<List<ImagesProduct>> GetAllAsync()
+        {
+            return await _context.ImagesProducts.ToListAsync();
+        }
+
+        public async Task<ImagesProduct?> GetByIdAsync(int id)
+        {
+            return await _context.ImagesProducts
+                .FirstOrDefaultAsync(ip => ip.ImagesProductID == id);
+        }
+
+        public async Task<List<ImagesProduct>> GetByProductIdAsync(int productId)
+        {
+            return await _context.ImagesProducts
+                .Where(ip => ip.ProductID == productId)
+                .ToListAsync();
+        }
+
+        public async Task AddAsync(ImagesProduct entity)
+        {
+            await _context.ImagesProducts.AddAsync(entity);
+        }
+
+        public async Task AddRangeAsync(IEnumerable<ImagesProduct> entities)
+        {
+            await _context.ImagesProducts.AddRangeAsync(entities);
+        }
+
+        public void Update(ImagesProduct entity)
+        {
+            _context.ImagesProducts.Update(entity);
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var entity = await _context.ImagesProducts.FindAsync(id);
+            if (entity == null) return false;
+            _context.ImagesProducts.Remove(entity);
+            return true;
+        }
+
+        public async Task<int> DeleteByProductIdAsync(int productId)
+        {
+            var list = await _context.ImagesProducts
+                .Where(ip => ip.ProductID == productId)
+                .ToListAsync();
+
+            if (list.Count == 0) return 0;
+
+            _context.ImagesProducts.RemoveRange(list);
+            return list.Count;
         }
     }
 }

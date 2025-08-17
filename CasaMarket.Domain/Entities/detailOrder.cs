@@ -4,12 +4,10 @@
     {
         public int DetailOrderID { get; set; }
 
-        public int OrderID { get; set; }  // FK
-        public Order Order { get; set; }  // Propiedad de navegación
+        public int OrderID { get; set; }
+        public Order? Order { get; set; }         
 
-        public int SellerID { get; set; }
-        public User Seller { get; set; } // Propiedad de navegación opcional
-
-        public string State { get; set; }
+        public int ProductID { get; set; }
+        public Product? Product { get; set; }    
     }
 }

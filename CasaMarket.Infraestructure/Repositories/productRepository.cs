@@ -1,51 +1,91 @@
-﻿using System.Data.Entity;
-using CasaMarket.Domain.Entities;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using CasaMarket.Infrastructure.Data;
+using CasaMarket.Domain.Entities;
 
-public class ProductRepository
+namespace CasaMarket.Infrastructure.Repositories
 {
-    private readonly CasaMarketApplicationContext context;
-
-    public ProductRepository(CasaMarketApplicationContext context)
+    public class ProductRepository
     {
-        this.context = context;
-    }
+        private readonly CasaMarketApplicationContext _context;
 
-    public async Task<List<product>> GetAllProductsAsync()
-    {
-        return await context.products
-            .Include(p => p.userID)
-        .Include(p => p.Images)
-            .ToListAsync();
-    }
-
-    public async Task<product> GetProductByIdAsync(int id)
-    {
-        return await context.products
-            .Include(p => p.userID)
-            .Include(p => p.Images)
-            .FirstOrDefaultAsync(p => p.ProductID == id);
-    }
-
-    public async Task AddProductAsync(product product)
-    {
-        context.products.Add(product);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task UpdateProductAsync(product product)
-    {
-        context.products.Update(product);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task DeleteProductAsync(int id)
-    {
-        var product = await GetProductByIdAsync(id);
-        if (product != null)
+        public ProductRepository(CasaMarketApplicationContext context)
         {
-            context.products.Remove(product);
-            await context.SaveChangesAsync();
+            _context = context;
+        }
+
+        public async Task<List<Product>> GetAllAsync()
+        {
+            return await _context.Products
+                .Include(p => p.ImagesProducts)
+                .Include(p => p.Reviews)
+                    .ThenInclude(r => r.User)                
+                .OrderByDescending(p => p.PublicationDate)
+                .ToListAsync();
+        }
+
+        public async Task<Product?> GetByIdAsync(int id)
+        {
+            return await _context.Products
+                .Include(p => p.ImagesProducts)
+                .Include(p => p.Reviews)
+                    .ThenInclude(r => r.User)                
+                .FirstOrDefaultAsync(p => p.ProductID == id);
+        }
+
+        public async Task<List<Product>> GetByCategoryAsync(string category)
+        {
+            return await _context.Products
+                .Where(p => p.Category == category)
+                .Include(p => p.ImagesProducts)
+                .OrderByDescending(p => p.PublicationDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<Product>> SearchByNameAsync(string term)
+        {
+            return await _context.Products
+                .Where(p => p.Name.Contains(term, System.StringComparison.OrdinalIgnoreCase))
+                .Include(p => p.ImagesProducts)
+                .ToListAsync();
+        }
+
+        public async Task<List<Product>> GetBySellerAsync(int userId)
+        {
+            return await _context.Products
+                .Where(p => p.UserID == userId)
+                .Include(p => p.ImagesProducts)
+                .OrderByDescending(p => p.PublicationDate)
+                .ToListAsync();
+        }
+
+        public async Task AddAsync(Product entity)
+        {
+            await _context.Products.AddAsync(entity);
+        }
+
+        public void Update(Product entity)
+        {
+            _context.Products.Update(entity);
+        }
+
+        public async Task<bool> UpdateStockAsync(int productId, int newStock)
+        {
+            var product = await _context.Products.FindAsync(productId);
+            if (product == null) return false;
+            product.Stock = newStock;
+            _context.Products.Update(product);
+            return true;
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var entity = await _context.Products.FindAsync(id);
+            if (entity == null) return false;
+            _context.Products.Remove(entity);
+            return true;
         }
     }
 }

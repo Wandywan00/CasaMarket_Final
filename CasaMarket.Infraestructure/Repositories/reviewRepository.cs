@@ -1,51 +1,77 @@
-﻿using System.Data.Entity;
-using CasaMarket.Domain.Entities;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using CasaMarket.Infrastructure.Data;
+using CasaMarket.Domain.Entities;
 
-public class ReviewRepository
+namespace CasaMarket.Infrastructure.Repositories
 {
-    private readonly CasaMarketApplicationContext context;
-
-    public ReviewRepository(CasaMarketApplicationContext context)
+    public class ReviewRepository
     {
-        this.context = context;
-    }
+        private readonly CasaMarketApplicationContext _context;
 
-    public async Task<List<review>> GetAllReviewsAsync()
-    {
-        return await context.review
-            .Include(r => r.ProductID)
-        .Include(r => r.UserID)
-            .ToListAsync();
-    }
-
-    public async Task<review> GetReviewByIdAsync(int id)
-    {
-        return await context.review
-            .Include(r => r.ProductID)
-            .Include(r => r.UserID)
-            .FirstOrDefaultAsync(r => r.ReviewID == id);
-    }
-
-    public async Task AddReviewAsync(review review)
-    {
-        context.review.Add(review);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task UpdateReviewAsync(review review)
-    {
-        context.review.Update(review);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task DeleteReviewAsync(int id)
-    {
-        var review = await GetReviewByIdAsync(id);
-        if (review != null)
+        public ReviewRepository(CasaMarketApplicationContext context)
         {
-            context.review.Remove(review);
-            await context.SaveChangesAsync();
+            _context = context;
+        }
+
+    
+        public async Task<List<Review>> GetAllAsync()
+        {
+            return await _context.Reviews
+                .Include(r => r.User)
+                .Include(r => r.Product)
+                .OrderByDescending(r => r.ReviewDate)
+                .ToListAsync();
+        }
+
+        public async Task<Review?> GetByIdAsync(int id)
+        {
+            return await _context.Reviews
+                .Include(r => r.User)
+                .Include(r => r.Product)
+                .FirstOrDefaultAsync(r => r.ReviewID == id);
+        }
+
+      
+        public async Task<List<Review>> GetByProductIdAsync(int productId)
+        {
+            return await _context.Reviews
+                .Where(r => r.ProductID == productId)
+                .Include(r => r.User)
+                .OrderByDescending(r => r.ReviewDate)
+                .ToListAsync();
+        }
+
+        
+        public async Task<List<Review>> GetByUserIdAsync(int userId)
+        {
+            return await _context.Reviews
+                .Where(r => r.UserID == userId)
+                .Include(r => r.Product)
+                .OrderByDescending(r => r.ReviewDate)
+                .ToListAsync();
+        }
+
+        public async Task AddAsync(Review entity)
+        {
+            await _context.Reviews.AddAsync(entity);
+        }
+
+      
+        public void Update(Review entity)
+        {
+            _context.Reviews.Update(entity);
+        }
+
+       
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var Review = await _context.Reviews.FindAsync(id);
+            if (Review == null) return false;
+            _context.Reviews.Remove(Review);
+            return true;
         }
     }
 }

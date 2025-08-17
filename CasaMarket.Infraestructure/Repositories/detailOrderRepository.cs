@@ -1,56 +1,66 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using CasaMarket.Infrastructure.Data;
 using CasaMarket.Domain.Entities;
+using CasaMarket.Infrastructure.Data;
 
 namespace CasaMarket.Infrastructure.Repositories
 {
     public class DetailOrderRepository
     {
-        private readonly CasaMarketApplicationContext context;
+        private readonly CasaMarketApplicationContext _context;
 
         public DetailOrderRepository(CasaMarketApplicationContext context)
         {
-            this.context = context;
+            _context = context;
         }
 
-        public async Task<List<DetailOrder>> GetAllDetailOrdersAsync()
+        public async Task<List<DetailOrder>> GetAllAsync()
         {
-            return await context.detailOrders
-                .Include(d => d.Order)         
-                    .ThenInclude(o => o.Buyer) 
+            return await _context.DetailOrders
+                .Include(d => d.Order)
+                .Include(d => d.ProductID)    
                 .ToListAsync();
         }
 
-        public async Task<DetailOrder> GetDetailOrderByIdAsync(int id)
+     
+        public async Task<DetailOrder?> GetByIdAsync(int id)
         {
-            return await context.detailOrders
+            return await _context.DetailOrders
                 .Include(d => d.Order)
-                    .ThenInclude(o => o.Buyer)
+                .Include(d => d.ProductID)
                 .FirstOrDefaultAsync(d => d.DetailOrderID == id);
         }
 
-        public async Task AddDetailOrderAsync(DetailOrder detailOrder)
+ 
+        public async Task<List<DetailOrder>> GetByOrderIdAsync(int orderId)
         {
-            context.detailOrders.Add(detailOrder);
-            await context.SaveChangesAsync();
+            return await _context.DetailOrders
+                .Where(d => d.OrderID == orderId)
+                .Include(d => d.ProductID)
+                .ToListAsync();
         }
 
-        public async Task UpdateDetailOrderAsync(DetailOrder detailOrder)
+    
+        public async Task AddAsync(DetailOrder entity)
         {
-            context.detailOrders.Update(detailOrder);
-            await context.SaveChangesAsync();
+            await _context.DetailOrders.AddAsync(entity);
         }
 
-        public async Task DeleteDetailOrderAsync(int id)
+       
+        public void Update(DetailOrder entity)
         {
-            var detailOrder = await GetDetailOrderByIdAsync(id);
-            if (detailOrder != null)
-            {
-                context.detailOrders.Remove(detailOrder);
-                await context.SaveChangesAsync();
-            }
+            _context.DetailOrders.Update(entity);
+        }
+
+       
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var entity = await _context.DetailOrders.FindAsync(id);
+            if (entity == null) return false;
+            _context.DetailOrders.Remove(entity);
+            return true;
         }
     }
 }
