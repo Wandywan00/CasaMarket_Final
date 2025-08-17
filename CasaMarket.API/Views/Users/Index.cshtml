@@ -1,0 +1,74 @@
+﻿@model IEnumerable<CasaMarket.Domain.Entities.User>
+@{
+    ViewData["Title"] = "Vendedores";
+    var q = Context.Request.Query["q"].ToString();
+}
+
+<div class="container py-3">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 m-0">Vendedores en CasaMarket</h1>
+        <a asp-action="Create" class="btn btn-primary">+ Nuevo vendedor</a>
+    </div>
+
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input type="search"
+                   name="q"
+                   value="@q"
+                   class="form-control"
+                   placeholder="Buscar por nombre o correo..." />
+            <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+        </div>
+    </form>
+
+    @if (!(Model?.Any() ?? false))
+    {
+        <div class="text-center text-muted py-5">
+            <p class="mb-1">No hay vendedores para mostrar.</p>
+            <small>Usa “+ Nuevo vendedor” para crear el primero.</small>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+            @foreach (var item in Model)
+            {
+                // Inicial del vendedor (avatar simple)
+                var initial = string.IsNullOrWhiteSpace(item.Name) ? "?" : item.Name.Trim()[0].ToString().ToUpper();
+
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="ratio ratio-16x9 bg-light d-flex align-items-center justify-content-center">
+                            <span class="display-6 text-muted fw-bold">@initial</span>
+                        </div>
+                        <div class="card-body d-grid gap-2">
+                            <div>
+                                <h5 class="card-title mb-1">@item.Name</h5>
+                                <div class="small text-muted">@item.Email</div>
+                                <span class="badge bg-secondary mt-2">@item.Role</span>
+                            </div>
+
+                            <a class="btn btn-dark"
+                               asp-controller="Products"
+                               asp-action="BySeller"
+                               asp-route-id="@item.UserID">
+                                Ver productos
+                            </a>
+
+                            <a class="btn btn-outline-secondary"
+                               href="mailto:@item.Email?subject=Interés en sus productos en CasaMarket">
+                                Contactar
+                            </a>
+
+                            <div class="d-flex justify-content-between pt-2 border-top mt-2">
+                                <a class="link-secondary small" asp-action="Edit" asp-route-id="@item.UserID">Editar</a>
+                                <a class="link-secondary small" asp-action="Details" asp-route-id="@item.UserID">Detalles</a>
+                                <a class="link-danger small" asp-action="Delete" asp-route-id="@item.UserID">Eliminar</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

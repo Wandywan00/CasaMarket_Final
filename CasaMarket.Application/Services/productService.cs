@@ -42,5 +42,10 @@ namespace CasaMarket.Application.Services
                 RatingCount = p.Reviews.Count
             }).ToList();
         }
+
+        public async Task GetByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
